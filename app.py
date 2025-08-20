@@ -46,10 +46,10 @@ conn.commit()
 
 # ===== ONBOARDING RESOURCES (replace placeholders) =====
 RESOURCES = {
-    "handbook_url": "https://example.com/chapter-handbook",
-    "brand_center_url": "https://example.com/brand-center",
-    "pd_recordings_url": "https://example.com/pd-recordings",
-    "staff_directory_url": "https://example.com/staff-directory",
+    "handbook_url": "https://docs.google.com/document/d/1711C6vSp4r4EHZw5MbgYuy-LkxrPF-2o69fHCCgU0fQ/edit?usp=sharing",
+    "brand_center_url": "https://drive.google.com/file/d/1hTp4w1ufmJVgNkzYxsOLjcdI9kBvro1X/view?usp=sharing",
+    "pd_recordings_url": "https://drive.google.com/drive/folders/1VkBMVvdlG0IofZ7_RKB4dMT0aXEzsxew?usp=drive_link",
+    "staff_directory_url": "https://docs.google.com/spreadsheets/d/1_7uLjg20Oy-ajgQCVdtozPTiWnO5pgdniR3lpKqRjw0/edit?usp=sharing",
     "all_team_channel": "<#allthemovementstreet>",  # or channel ID like <#C12345678>
     "announcements_channel": "<#announcements>",    # or channel ID
     "admin_email": "admin@themovementstreet.org",
@@ -159,10 +159,10 @@ def build_home_view(user_id: str):
 
     resources_md = (
         f"{RESOURCES['all_team_channel']} • {RESOURCES['announcements_channel']} • "
-        f"<{RESOURCES['https://docs.google.com/document/d/1711C6vSp4r4EHZw5MbgYuy-LkxrPF-2o69fHCCgU0fQ/edit?usp=sharing']}|Handbook> • "
-        f"<{RESOURCES['https://drive.google.com/file/d/1hTp4w1ufmJVgNkzYxsOLjcdI9kBvro1X/view?usp=sharing']}|Brand Center> • "
-        f"<{RESOURCES['https://drive.google.com/drive/folders/1VkBMVvdlG0IofZ7_RKB4dMT0aXEzsxew?usp=drive_link']}|PD Recordings> • "
-        f"<{RESOURCES['https://docs.google.com/spreadsheets/d/1_7uLjg20Oy-ajgQCVdtozPTiWnO5pgdniR3lpKqRjw0/edit?usp=sharing']}|Staff Directory>"
+        f"<{RESOURCES['handbook_url']}|Handbook> • "
+        f"<{RESOURCES['brand_center_url']}|Brand Center> • "
+        f"<{RESOURCES['pd_recordings_url']}|PD Recordings> • "
+        f"<{RESOURCES['staff_directory_url']}|Staff Directory>"
     )
     blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"Resources: {resources_md}"}]})
 
