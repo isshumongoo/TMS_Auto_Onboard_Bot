@@ -1,18 +1,34 @@
-import os, re, sqlite3
+import os, re, sqlite3, stat
 from datetime import datetime, UTC
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
-# Optional: load .env if present
+# Load .env early (if present) so env vars are available before we read them
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except Exception:
     pass
 
+# ---- Tokens
 BOT_TOKEN = os.environ["SLACK_BOT_TOKEN"]     # xoxb-...
 APP_TOKEN = os.environ["SLACK_APP_TOKEN"]     # xapp-...
-DB_PATH   = os.getenv("ONBOARDING_DB_PATH", "onboarding.db")
+
+# ---- SQLite path (persist to /data in Railway)
+DB_PATH = os.getenv("ONBOARDING_DB_PATH", "onboarding.db")
+
+# Ensure parent dir exists and is writable (important for mounted volumes like /data)
+db_dir = os.path.dirname(DB_PATH) or "."
+try:
+    os.makedirs(db_dir, exist_ok=True)
+    # Relax permissions in case the volume is mounted with strict defaults
+    os.chmod(db_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0o777
+except Exception as e:
+    print(f"[DB] mkdir/chmod error for {db_dir}: {e}")
+
+# Diagnostics you'll see in Railway logs
+print(f"[DB] DB_PATH={DB_PATH}")
+print(f"[DB] dir exists? {os.path.isdir(db_dir)}  writable? {os.access(db_dir, os.W_OK)}")
 
 # ---- Data store (SQLite)
 conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -112,6 +128,7 @@ def build_home_view(user_id: str):
         {"type": "section", "text": {"type": "mrkdwn",
          "text": "Welcome to The Movement Street. Check items as you complete them. Your progress saves automatically."}},
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*Progress:* {progress_text}"}},
+
     ]
 
     groups = tasks_by_group()
@@ -124,14 +141,14 @@ def build_home_view(user_id: str):
 
         options = [{"text": {"type": "plain_text", "text": t["label"]}, "value": t["id"]} for t in items]
         initial = [{"text": {"type": "plain_text", "text": t["label"]}, "value": t["id"]}
-                for t in items if t["id"] in done]
+                   for t in items if t["id"] in done]
 
         checkbox_el = {
             "type": "checkboxes",
             "action_id": f"task_toggle_{group_name.lower()}",
             "options": options,
         }
-        # Only set initial_options if we actually have any
+        # Only set initial_options if we actually have any (avoids Slack validation error)
         if initial:
             checkbox_el["initial_options"] = initial
 
@@ -139,7 +156,6 @@ def build_home_view(user_id: str):
             "type": "actions",
             "elements": [checkbox_el]
         })
-
 
     resources_md = (
         f"{RESOURCES['all_team_channel']} • {RESOURCES['announcements_channel']} • "
